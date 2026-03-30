@@ -1,0 +1,58 @@
+:root {
+  color: #f6f2df;
+  background:
+    radial-gradient(circle at top, rgba(95, 211, 224, 0.17), transparent 32%),
+    radial-gradient(circle at bottom, rgba(255, 160, 75, 0.16), transparent 36%),
+    linear-gradient(180deg, #02060d 0%, #0b1520 52%, #1b1009 100%);
+  font-family: "IBM Plex Mono", "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  min-height: 100vh;
+}
+
+.shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.stage {
+  width: min(96vw, 1120px);
+  aspect-ratio: 4 / 3;
+  display: grid;
+  place-items: center;
+  padding: clamp(10px, 1.4vw, 18px);
+  border-radius: 28px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.015)),
+    rgba(3, 8, 15, 0.7);
+  box-shadow:
+    0 28px 80px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 1px rgba(173, 216, 255, 0.09);
+  backdrop-filter: blur(12px);
+}
+
+.game-canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 20px;
+  image-rendering: crisp-edges;
+  box-shadow:
+    0 0 0 1px rgba(188, 228, 255, 0.08),
+    0 18px 32px rgba(0, 0, 0, 0.35);
+}
