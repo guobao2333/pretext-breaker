@@ -12,6 +12,15 @@ on:
           - '20'
           - '22'
           - '24'
+      run-mode:
+        description: 'Run Mode'
+        required: true
+        default: 'both'
+        type: choice
+        options:
+          - 'only-release'
+          - 'only-deploy'
+          - 'both'
 
 permissions:
   contents: write
@@ -50,6 +59,7 @@ jobs:
 
   release:
     needs: build
+    if: ${{ inputs.run-mode == 'both' || inputs.run-mode == 'only-release' }}
     runs-on: ubuntu-latest
     steps:
       - name: Download dist artifact
@@ -73,6 +83,7 @@ jobs:
 
   deploy:
     needs: build
+    if: ${{ inputs.run-mode == 'both' || inputs.run-mode == 'only-deploy' }}
     runs-on: ubuntu-latest
     environment:
       name: github-pages
