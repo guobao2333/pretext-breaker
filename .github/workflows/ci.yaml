@@ -1,0 +1,93 @@
+name: Build and Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      node-version:
+        description: 'Nodejs Version'
+        required: true
+        default: '22'
+        type: choice
+        options:
+          - '20'
+          - '22'
+          - '24'
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      date: ${{ steps.set-date.outputs.DATE }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Nodejs
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: 'npm'
+
+      - name: Install dependent
+        run: npm install
+
+      - name: Build project
+        id: set-date
+        run: |
+          npm run build
+          echo "DATE=$(date +%Y%m%d-%H%M)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download dist artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+
+      - name: Packaged build
+        run: |
+          mv dist pretext-breaker
+          tar --zstd -cf dist.tar.zst pretext-breaker/
+
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.build.outputs.date }}
+          name: Release ${{ needs.build.outputs.date }}
+          files: dist.tar.zst
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Download dist artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
