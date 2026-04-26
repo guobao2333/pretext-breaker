@@ -2664,12 +2664,9 @@ export class PretextBreaker {
         }
         if (line === null) return
 
-        const block = this.renderer.getBlock(line.text, FONTS.wall, LINE_HEIGHTS.wall)
         const color = TEXT_WALL_COLORS[(Math.floor(lineTop / LINE_HEIGHTS.wall) + slotIndex) % TEXT_WALL_COLORS.length]!
-        this.renderer.drawBlock(this.context, block, slot.left, lineTop + offsetY, {
-          alpha: 0.52 * alphaMultiplier,
-          color,
-        })
+        // drawLineText skips TextBlock allocation — wall text changes every frame so caching is wasteful.
+        this.renderer.drawLineText(this.context, line.text, slot.left, lineTop + offsetY, FONTS.wall, color, 0.52 * alphaMultiplier)
         cursor = line.end
       }
     }

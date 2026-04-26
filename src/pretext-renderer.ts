@@ -10,6 +10,18 @@ import {
 
 const UNBOUNDED_WIDTH = 100_000
 
+// LRU eviction: Map preserves insertion order, so the first key is the oldest.
+const MAX_BLOCK_CACHE = 500
+const MAX_SEGMENT_CACHE = 200
+const MAX_PREPARED_CACHE = 200
+
+function evictOldest<V>(cache: Map<string, V>, max: number): void {
+  if (cache.size > max) {
+    const first = cache.keys().next().value
+    if (first !== undefined) cache.delete(first)
+  }
+}
+
 export type WhiteSpaceMode = 'normal' | 'pre-wrap'
 
 export type TextBlock = {
@@ -107,7 +119,28 @@ export class PretextRenderer {
     }
 
     this.blockCache.set(key, block)
+    evictOldest(this.blockCache, MAX_BLOCK_CACHE)
     return block
+  }
+
+  // Lightweight single-line draw — bypasses TextBlock allocation entirely.
+  // Use this for high-frequency text that changes every frame (e.g. the text wall).
+  drawLineText(
+    context: CanvasRenderingContext2D,
+    text: string,
+    x: number,
+    y: number,
+    font: string,
+    color: string,
+    alpha = 1,
+  ): void {
+    context.save()
+    context.font = font
+    context.textBaseline = 'top'
+    context.globalAlpha = alpha
+    context.fillStyle = color
+    context.fillText(text, x, y)
+    context.restore()
   }
 
   drawBlock(
@@ -164,6 +197,7 @@ export class PretextRenderer {
 
     const prepared = prepare(text, font, { whiteSpace })
     this.preparedCache.set(key, prepared)
+    evictOldest(this.preparedCache, MAX_PREPARED_CACHE)
     return prepared
   }
 
@@ -178,6 +212,7 @@ export class PretextRenderer {
 
     const prepared = prepareWithSegments(text, font, { whiteSpace })
     this.preparedSegmentCache.set(key, prepared)
+    evictOldest(this.preparedSegmentCache, MAX_SEGMENT_CACHE)
     return prepared
   }
 }
