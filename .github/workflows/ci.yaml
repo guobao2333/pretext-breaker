@@ -6,7 +6,7 @@ on:
       node-version:
         description: 'Nodejs Version'
         required: true
-        default: '22'
+        default: '24'
         type: choice
         options:
           - '20'
@@ -34,16 +34,16 @@ jobs:
       date: ${{ steps.set-date.outputs.DATE }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Nodejs
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ inputs.node-version }}
           cache: 'npm'
 
       - name: Install dependent
-        run: npm install
+        run: npm ci
 
       - name: Build project
         id: set-date
@@ -52,7 +52,7 @@ jobs:
           echo "DATE=$(date +%Y%m%d-%H%M)" >> "$GITHUB_OUTPUT"
 
       - name: Upload dist artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: dist
           path: dist
@@ -63,7 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download dist artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: dist
 
@@ -90,15 +90,15 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Download dist artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: dist
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: dist
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
