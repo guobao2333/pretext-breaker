@@ -39,7 +39,8 @@ jobs:
 
       - name: Packaged build
         run: |
-          tar --zstd -cf dist.tar.zst dist/
+          mv dist pretext-breaker
+          tar --zstd -cf dist.tar.zst pretext-breaker/
 
       - name: Upload to release
         uses: softprops/action-gh-release@v2
