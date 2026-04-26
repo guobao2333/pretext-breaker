@@ -55,7 +55,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: dist
-          path: dist
+          path: dist/**
 
   release:
     needs: build
@@ -66,7 +66,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: dist
-          path: .
+          path: dist
 
       - name: Packaged build
         run: |
@@ -94,7 +94,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: dist
-          path: .
+          path: dist
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5
