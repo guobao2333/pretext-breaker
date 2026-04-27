@@ -1,4 +1,5 @@
 name: Build and Deploy
+run-name: ${{ inputs.run-mode }}
 
 on:
   workflow_dispatch:
@@ -8,24 +9,22 @@ on:
         required: true
         default: '24'
         type: choice
-        options:
-          - '20'
-          - '22'
-          - '24'
+        options: ['20', '22', '24']
       run-mode:
         description: 'Run Mode'
         required: true
-        default: 'both'
+        default: 'Release and Deploy'
         type: choice
-        options:
-          - 'only-release'
-          - 'only-deploy'
-          - 'both'
+        options: ['Only Release', 'Only Deploy', 'Release and Deploy']
 
 permissions:
   contents: write
   pages: write
   id-token: write
+
+#concurrency:
+#  group: pages
+#  cancel-in-progress: true
 
 jobs:
   build:
@@ -58,14 +57,14 @@ jobs:
           path: dist/**
 
       - name: Upload Pages artifact
-        if: ${{ inputs.run-mode == 'both' || inputs.run-mode == 'only-deploy' }}
+        if: ${{ inputs.run-mode == 'Only Deploy' || inputs.run-mode == 'Release and Deploy' }}
         uses: actions/upload-pages-artifact@v5
         with:
           path: dist
 
   release:
     needs: build
-    if: ${{ inputs.run-mode == 'both' || inputs.run-mode == 'only-release' }}
+    if: ${{ inputs.run-mode == 'Only Release' || inputs.run-mode == 'Release and Deploy' }}
     runs-on: ubuntu-latest
     steps:
       - name: Download dist artifact
@@ -89,7 +88,7 @@ jobs:
 
   deploy:
     needs: build
-    if: ${{ inputs.run-mode == 'both' || inputs.run-mode == 'only-deploy' }}
+    if: ${{ inputs.run-mode == 'Only Deploy' || inputs.run-mode == 'Release and Deploy' }}
     runs-on: ubuntu-latest
     environment:
       name: github-pages
