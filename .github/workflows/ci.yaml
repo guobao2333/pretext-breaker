@@ -31,7 +31,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     outputs:
-      date: ${{ steps.set-date.outputs.DATE }}
+      date: ${{ steps.date.outputs.DATE }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -40,13 +40,13 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ inputs.node-version }}
-          cache: 'npm'
+          cache: npm
 
       - name: Install dependent
         run: npm ci
 
       - name: Build project
-        id: set-date
+        id: date
         run: |
           npm run build
           echo "DATE=$(date +%Y%m%d-%H%M)" >> "$GITHUB_OUTPUT"
@@ -57,6 +57,12 @@ jobs:
           name: dist
           path: dist/**
 
+      - name: Upload Pages artifact
+        if: ${{ inputs.run-mode == 'both' || inputs.run-mode == 'only-deploy' }}
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
   release:
     needs: build
     if: ${{ inputs.run-mode == 'both' || inputs.run-mode == 'only-release' }}
@@ -66,11 +72,10 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: dist
-          path: dist
+          path: pretext-breaker
 
-      - name: Packaged build
+      - name: Packaged dist
         run: |
-          mv dist pretext-breaker
           tar --zstd -cf dist.tar.zst pretext-breaker/
 
       - name: Upload to release
@@ -90,17 +95,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Download dist artifact
-        uses: actions/download-artifact@v8
-        with:
-          name: dist
-          path: dist
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v5
-        with:
-          path: dist
-
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
